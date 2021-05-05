@@ -14,7 +14,15 @@ pub struct STConfig {
 
 impl STConfig {
     pub fn write_default() -> STResult<()> {
-        todo!()
+        let base_path = Self::path()?
+            .parent()
+            .map(|p| p.to_path_buf())
+            .ok_or(STError::Other("Parent does not exist".into()))?;
+        if !base_path.exists() {
+            fs::create_dir(base_path)?;
+        }
+        fs::write(Self::path()?, DEFAULT_CONFIG)?;
+        Ok(())
     }
 
     pub fn load() -> STResult<Self> {
@@ -23,7 +31,7 @@ impl STConfig {
         Ok(conf)
     }
 
-    fn path() -> STResult<PathBuf> {
+    pub fn path() -> STResult<PathBuf> {
         Ok(dirs::config_dir()
             .ok_or(STError::Other("Failed to find root config dir".into()))?
             .join("swaytab")

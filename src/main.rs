@@ -26,6 +26,20 @@ fn collect_con_nodes(collection: &mut Vec<Node>, root: Node) {
 }
 
 fn main() -> STResult<()> {
+    // Handle args
+    let args = std::env::args().collect::<Vec<String>>();
+    if args.len() == 2 {
+        match args[1].as_str() {
+            "--version" | "-v" => println!("Version: {}", env!("CARGO_PKG_VERSION")),
+            "--gen-config" | "-g" => {
+                STConfig::write_default()?;
+                println!("Wrote default config to {:?}", STConfig::path()?);
+            }
+            _ => {}
+        }
+        return Ok(());
+    }
+
     // Load config
     let conf = STConfig::load()?;
 
