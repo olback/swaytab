@@ -55,6 +55,12 @@ fn main() -> STResult<()> {
     // Get nodes
     let mut nodes = Vec::<Node>::new();
     collect_con_nodes(&mut nodes, tree);
+
+    // If no windows are open, exit
+    if nodes.len() == 0 {
+        return Ok(());
+    }
+
     let map = nodes
         .into_iter()
         .filter_map(|n| match (n.name, n.id) {
