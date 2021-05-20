@@ -16,10 +16,13 @@ mod config;
 mod error;
 
 fn collect_con_nodes(collection: &mut Vec<Node>, root: Node) {
-    if root.node_type == NodeType::Con {
+    if root.node_type == NodeType::Con || root.node_type == NodeType::FloatingCon {
         collection.push(root);
     } else {
         for child in root.nodes {
+            collect_con_nodes(collection, child);
+        }
+        for child in root.floating_nodes {
             collect_con_nodes(collection, child);
         }
     }
@@ -54,11 +57,11 @@ fn main() -> STResult<()> {
     collect_con_nodes(&mut nodes, tree);
     let map = nodes
         .into_iter()
-        .filter_map(|n| match (n.name, n.pid) {
-            (Some(name), Some(pid)) => Some((name, pid)),
+        .filter_map(|n| match (n.name, n.id) {
+            (Some(name), id) => Some((name, id)),
             _ => None,
         })
-        .collect::<HashMap<String, i32>>();
+        .collect::<HashMap<String, i64>>();
 
     // Get keys (window titles)
     let keys = map
@@ -93,12 +96,12 @@ fn main() -> STResult<()> {
     }
 
     let selected_item = String::from_utf8(menu_output.stdout)?.trim().to_string();
-    let pid = map
+    let id = map
         .get(&selected_item)
         .ok_or(STError::Other("Internal error".into()))?;
 
     // Send focus to selected application
-    con.run_command(format!("[pid={}] focus", pid))?;
+    con.run_command(format!("[con_id={}] focus", id))?;
 
     Ok(())
 }
